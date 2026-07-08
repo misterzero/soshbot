@@ -1,0 +1,28 @@
+# Cloudflare Workers config — deploy target for M4 (see docs/ROADMAP.md).
+# Local development uses `npm run dev` with a local SQLite file; this file
+# defines the production bindings that Terraform-provisioned resources back.
+
+name = "soshbot"
+main = ".open-next/worker.js"
+compatibility_date = "2026-06-01"
+compatibility_flags = ["nodejs_compat"]
+
+[assets]
+directory = ".open-next/assets"
+binding = "ASSETS"
+
+# Hourly iCal sync (F1)
+[triggers]
+crons = ["0 * * * *"]
+
+[[d1_databases]]
+binding = "DB"
+database_name = "soshbot-prod"
+database_id = "placeholder-set-by-terraform-output"
+
+[[r2_buckets]]
+binding = "PROMO_ASSETS"
+bucket_name = "soshbot-assets-prod"
+
+[vars]
+ENVIRONMENT = "production"
