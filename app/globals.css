@@ -211,3 +211,34 @@ button.danger {
   border-radius: 8px;
   border: 1px solid var(--border);
 }
+
+.asset-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.25rem;
+}
+
+.asset-card {
+  margin: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.asset-card img {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+
+.asset-card textarea {
+  width: 100%;
+  font-size: 0.8rem;
+  resize: vertical;
+}
+
+input[type="color"] {
+  padding: 0;
+  width: 3.5rem;
+  height: 2.2rem;
+  cursor: pointer;
+}

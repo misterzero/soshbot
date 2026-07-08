@@ -16,8 +16,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <nav className="site-nav">
             <Link href="/">Dashboard</Link>
             <Link href="/entertainers">Entertainers</Link>
+            <Link href="/assets">Assets</Link>
             <Link href="/review">Review</Link>
             <Link href="/sources">Feeds</Link>
+            <Link href="/brand">Brand</Link>
           </nav>
           <span className="venue-name">The Rusty Anchor Taproom</span>
         </header>

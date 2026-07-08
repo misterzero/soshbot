@@ -12,6 +12,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { getDb, schema } from "@/db";
 import { detectImageType, MAX_UPLOAD_BYTES } from "@/lib/media/sniff";
+import { generateAsset } from "@/lib/render/generate";
+import type { AssetType, Platform } from "@/lib/render/pipeline";
 import { syncAllSources } from "@/lib/sync/apply";
 import { isAllowedFeedUrl } from "@/lib/sync/ical";
 
@@ -161,4 +163,65 @@ export async function runSync(): Promise<void> {
   revalidatePath("/");
   revalidatePath("/sources");
   revalidatePath("/review");
+}
+
+const generateSchema = z.object({
+  type: z.enum(["daily", "weekly", "monthly"]),
+  platform: z.enum(["ig_square", "ig_story", "fb_landscape"]),
+  eventId: z.string().uuid().or(z.string().regex(/^evt-[\w-]+$/)).optional(),
+});
+
+export async function generatePromoAssets(formData: FormData): Promise<void> {
+  const parsed = generateSchema.safeParse({
+    type: str(formData, "type"),
+    platform: str(formData, "platform"),
+    eventId: str(formData, "eventId"),
+  });
+  if (!parsed.success) throw new Error("Invalid generation request");
+  const { type, platform, eventId } = parsed.data;
+  const result = await generateAsset(type as AssetType, platform as Platform, eventId);
+  if (!result.ok) throw new Error(result.error);
+  revalidatePath("/assets");
+}
+
+const brandSchema = z.object({
+  primary: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  secondary: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  background: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+  voiceSample: z.string().max(500).optional(),
+  hashtags: z.string().max(300).optional(),
+});
+
+export async function saveBrandKit(formData: FormData): Promise<void> {
+  const parsed = brandSchema.safeParse({
+    primary: str(formData, "primary"),
+    secondary: str(formData, "secondary"),
+    background: str(formData, "background"),
+    voiceSample: str(formData, "voiceSample"),
+    hashtags: str(formData, "hashtags"),
+  });
+  if (!parsed.success) throw new Error("Invalid brand kit data");
+
+  const db = getDb();
+  const venue = await db.query.venues.findFirst();
+  if (!venue) throw new Error("No venue configured");
+  const d = parsed.data;
+  const values = {
+    colors: { primary: d.primary, secondary: d.secondary, background: d.background },
+    voiceSample: d.voiceSample ?? null,
+    hashtags: d.hashtags
+      ? d.hashtags.split(/[\s,]+/).filter(Boolean).map((h) => (h.startsWith("#") ? h : `#${h}`))
+      : null,
+  };
+
+  const existing = await db.query.brandKits.findFirst({
+    where: eq(schema.brandKits.venueId, venue.id),
+  });
+  if (existing) {
+    await db.update(schema.brandKits).set(values).where(eq(schema.brandKits.id, existing.id));
+  } else {
+    await db.insert(schema.brandKits).values({ id: randomUUID(), venueId: venue.id, ...values });
+  }
+  revalidatePath("/brand");
+  revalidatePath("/assets");
 }

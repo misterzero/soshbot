@@ -17,7 +17,9 @@
     "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy"
   },
   "dependencies": {
+    "@resvg/resvg-js": "^2.6.2",
     "better-sqlite3": "^11.10.0",
+    "satori": "^0.26.0",
     "drizzle-orm": "^0.44.2",
     "next": "^15.3.4",
     "node-ical": "^0.20.1",
