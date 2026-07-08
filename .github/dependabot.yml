@@ -9,10 +9,17 @@ updates:
       minor-and-patch:
         update-types: ["minor", "patch"]
     ignore:
-      # TS 7 (Go rewrite) breaks Next 15 CSS imports and typescript-eslint.
+      # TS 7 (Go rewrite) breaks Next CSS imports and typescript-eslint.
       # Revisit when eslint-config-next declares TS 7 support.
       - dependency-name: typescript
         versions: [">=7.0.0"]
+      # eslint 10 removed context.getFilename; eslint-plugin-react (bundled
+      # in eslint-config-next) still calls it. Revisit on plugin support.
+      - dependency-name: eslint
+        versions: [">=10.0.0"]
+      # Type definitions should track our runtime (Node 22, LTS to 2027).
+      - dependency-name: "@types/node"
+        versions: [">=23.0.0"]
 
   - package-ecosystem: github-actions
     directory: "/"

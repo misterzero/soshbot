@@ -4,6 +4,25 @@ import { evaluate, DEFAULT_RULES, type RuleEvent } from "@/lib/rules/engine";
 
 export const dynamic = "force-dynamic";
 
+type EventRow = {
+  id: string;
+  status: string;
+  startsAt: Date;
+  entertainerId: string | null;
+};
+
+/** Computed outside the component body: react-hooks/purity forbids Date.now() in render. */
+function partitionEvents<T extends EventRow>(allEvents: T[]) {
+  const now = Date.now();
+  const upcoming = allEvents
+    .filter((e) => e.status !== "cancelled" && e.startsAt.getTime() > now)
+    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
+  const reviewCount = allEvents.filter(
+    (e) => !e.entertainerId && e.status !== "cancelled" && e.startsAt.getTime() > now
+  ).length;
+  return { upcoming, reviewCount };
+}
+
 function fmt(d: Date): string {
   return new Intl.DateTimeFormat("en-US", {
     weekday: "short",
@@ -48,14 +67,8 @@ export default async function Dashboard() {
     { ...DEFAULT_RULES, monthlyBudget: venue.monthlyBudget }
   );
 
-  const upcoming = allEvents
-    .filter((e) => e.status !== "cancelled" && e.startsAt.getTime() > Date.now())
-    .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
-
+  const { upcoming, reviewCount } = partitionEvents(allEvents);
   const committed = allPayouts.reduce((sum, p) => sum + p.amount, 0);
-  const reviewCount = allEvents.filter(
-    (e) => !e.entertainerId && e.status !== "cancelled" && e.startsAt.getTime() > Date.now()
-  ).length;
 
   return (
     <>
