@@ -1,7 +1,8 @@
 import { defineConfig } from "vitest/config";
 
 export default defineConfig({
-  esbuild: { jsx: "automatic" },
+  // Vitest 4 bundles with Rolldown/oxc (esbuild options no longer apply)
+  oxc: { jsx: { runtime: "automatic" } },
   test: {
     include: ["lib/**/*.test.{ts,tsx}"],
     coverage: {

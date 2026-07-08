@@ -8,6 +8,11 @@ updates:
     groups:
       minor-and-patch:
         update-types: ["minor", "patch"]
+    ignore:
+      # TS 7 (Go rewrite) breaks Next 15 CSS imports and typescript-eslint.
+      # Revisit when eslint-config-next declares TS 7 support.
+      - dependency-name: typescript
+        versions: [">=7.0.0"]
 
   - package-ecosystem: github-actions
     directory: "/"
