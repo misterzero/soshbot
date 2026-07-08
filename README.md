@@ -16,7 +16,7 @@ npm run dev        # http://localhost:3000
 
 The seed loads a fictional venue ("The Rusty Anchor Taproom") with intentional booking problems, so the dashboard immediately demonstrates conflict, gap, variety, and budget alerts.
 
-## What's here (M0 + M1 + M3)
+## What's here (M0–M3)
 
 | Area | Status |
 |---|---|
@@ -32,7 +32,8 @@ The seed loads a fictional venue ("The Rusty Anchor Taproom") with intentional b
 | Calendar feed management + manual sync (`/sources`, `POST /api/sync`) | ✅ |
 | Promo asset generation (`lib/render`) — Satori JSX templates → PNG via resvg; daily/weekly/monthly at IG square, IG story, and FB sizes; brand-kit driven colors; platform captions | ✅ |
 | Review gallery (`/assets`) + brand kit editor (`/brand`) | ✅ |
-| Payout tracking UI (M2), Cloudflare deploy + Terraform (M4) | 🔜 |
+| Payout tracking (`/payouts`) — per-event payouts, monthly budget bar, spend-by-entertainer, injection-safe CSV export | ✅ |
+| Cloudflare deploy + Terraform (M4) | 🔜 |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the milestone plan.
 

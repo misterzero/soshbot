@@ -165,6 +165,53 @@ export async function runSync(): Promise<void> {
   revalidatePath("/review");
 }
 
+const payoutSchema = z.object({
+  eventId: z.string().min(1),
+  amount: z.coerce.number().nonnegative().max(1_000_000),
+  status: z.enum(["pending", "paid"]),
+});
+
+export async function savePayout(formData: FormData): Promise<void> {
+  const parsed = payoutSchema.safeParse({
+    eventId: str(formData, "eventId"),
+    amount: str(formData, "amount"),
+    status: str(formData, "status"),
+  });
+  if (!parsed.success) throw new Error("Invalid payout data");
+  const { eventId, amount, status } = parsed.data;
+
+  const db = getDb();
+  const event = await db.query.events.findFirst({ where: eq(schema.events.id, eventId) });
+  if (!event) throw new Error("Event not found");
+
+  const existing = await db.query.payouts.findFirst({
+    where: eq(schema.payouts.eventId, eventId),
+  });
+  const values = {
+    amount,
+    status,
+    paidAt: status === "paid" ? new Date() : null,
+  };
+  if (existing) {
+    await db.update(schema.payouts).set(values).where(eq(schema.payouts.id, existing.id));
+  } else {
+    await db.insert(schema.payouts).values({ id: randomUUID(), eventId, ...values });
+  }
+  revalidatePath("/payouts");
+  revalidatePath("/");
+}
+
+export async function setMonthlyBudget(formData: FormData): Promise<void> {
+  const amount = z.coerce.number().nonnegative().max(10_000_000).safeParse(str(formData, "monthlyBudget"));
+  if (!amount.success) throw new Error("Invalid budget");
+  const db = getDb();
+  const venue = await db.query.venues.findFirst();
+  if (!venue) throw new Error("No venue configured");
+  await db.update(schema.venues).set({ monthlyBudget: amount.data }).where(eq(schema.venues.id, venue.id));
+  revalidatePath("/payouts");
+  revalidatePath("/");
+}
+
 const generateSchema = z.object({
   type: z.enum(["daily", "weekly", "monthly"]),
   platform: z.enum(["ig_square", "ig_story", "fb_landscape"]),
