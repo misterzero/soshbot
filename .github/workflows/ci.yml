@@ -15,10 +15,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v5.0.1
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5df448d1b4c8b7ea1e21a3bd8a8e0dc6 # v6.0.1
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm
@@ -49,27 +49,27 @@ jobs:
       contents: read
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v5.0.1
+        uses: actions/checkout@v5
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@e12f0178983d466f2f6028f5cd7ae6f0136e5673 # v4.31.9
+        uses: github/codeql-action/init@v4
         with:
           languages: javascript-typescript
 
       - name: Analyze
-        uses: github/codeql-action/analyze@e12f0178983d466f2f6028f5cd7ae6f0136e5673 # v4.31.9
+        uses: github/codeql-action/analyze@v4
 
   secrets:
     name: Secret scan (Gitleaks)
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v5.0.1
+        uses: actions/checkout@v5
         with:
           fetch-depth: 0
 
       - name: Gitleaks
-        uses: gitleaks/gitleaks-action@ff98106e4c7b2bc287b24eaf42907196329070c7 # v2.3.9
+        uses: gitleaks/gitleaks-action@v2
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -78,10 +78,10 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v5.0.1
+        uses: actions/checkout@v5
 
       - name: Setup Node
-        uses: actions/setup-node@6044e13b5df448d1b4c8b7ea1e21a3bd8a8e0dc6 # v6.0.1
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: npm

@@ -1,9 +1,13 @@
-# Cloudflare Workers config — deploy target for M4 (see docs/ROADMAP.md).
-# Local development uses `npm run dev` with a local SQLite file; this file
-# defines the production bindings that Terraform-provisioned resources back.
+# Cloudflare Workers config. Local development uses `npm run dev` with a
+# local SQLite file; these bindings back the deployed environments.
+#
+# Deploy flow (see .github/workflows/cd.yml):
+#   1. terraform apply (infra/envs/<env>) creates the D1 database + R2 bucket
+#   2. paste the D1 database_id output below (one-time per environment)
+#   3. opennextjs-cloudflare build && wrangler deploy --env <env>
 
 name = "soshbot"
-main = ".open-next/worker.js"
+main = "worker.ts"
 compatibility_date = "2026-06-01"
 compatibility_flags = ["nodejs_compat"]
 
@@ -11,18 +15,52 @@ compatibility_flags = ["nodejs_compat"]
 directory = ".open-next/assets"
 binding = "ASSETS"
 
-# Hourly iCal sync (F1)
-[triggers]
+[vars]
+ENVIRONMENT = "dev"
+
+# ── Staging ──────────────────────────────────────────────────────────────
+[env.staging]
+name = "soshbot-staging"
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+
+[env.staging.triggers]
+crons = ["0 * * * *"] # hourly iCal sync
+
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "soshbot-staging"
+database_id = "REPLACE_WITH_TERRAFORM_OUTPUT_staging_d1_id"
+migrations_dir = "db/migrations"
+
+[[env.staging.r2_buckets]]
+binding = "PROMO_ASSETS"
+bucket_name = "soshbot-assets-staging"
+
+[env.staging.services]
+# lets the scheduled() handler call back into this worker
+WORKER_SELF_REFERENCE = { service = "soshbot-staging" }
+
+# ── Production ───────────────────────────────────────────────────────────
+[env.production]
+name = "soshbot-prod"
+
+[env.production.vars]
+ENVIRONMENT = "production"
+
+[env.production.triggers]
 crons = ["0 * * * *"]
 
-[[d1_databases]]
+[[env.production.d1_databases]]
 binding = "DB"
 database_name = "soshbot-prod"
-database_id = "placeholder-set-by-terraform-output"
+database_id = "REPLACE_WITH_TERRAFORM_OUTPUT_prod_d1_id"
+migrations_dir = "db/migrations"
 
-[[r2_buckets]]
+[[env.production.r2_buckets]]
 binding = "PROMO_ASSETS"
 bucket_name = "soshbot-assets-prod"
 
-[vars]
-ENVIRONMENT = "production"
+[env.production.services]
+WORKER_SELF_REFERENCE = { service = "soshbot-prod" }

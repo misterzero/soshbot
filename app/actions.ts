@@ -4,8 +4,6 @@
  * Server actions: all mutations flow through here, Zod-validated.
  */
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { writeFile } from "node:fs/promises";
 import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -14,10 +12,9 @@ import { getDb, schema } from "@/db";
 import { detectImageType, MAX_UPLOAD_BYTES } from "@/lib/media/sniff";
 import { generateAsset } from "@/lib/render/generate";
 import type { AssetType, Platform } from "@/lib/render/pipeline";
+import { putObject } from "@/lib/storage";
 import { syncAllSources } from "@/lib/sync/apply";
 import { isAllowedFeedUrl } from "@/lib/sync/ical";
-
-const MEDIA_DIR = ".data/media";
 
 function str(form: FormData, key: string): string | undefined {
   const v = form.get(key);
@@ -89,8 +86,7 @@ export async function uploadMedia(formData: FormData): Promise<void> {
   const db = getDb();
   const id = randomUUID();
   const filename = `${id}.${sniffed.ext}`; // random server-side name; client name discarded
-  mkdirSync(MEDIA_DIR, { recursive: true });
-  await writeFile(`${MEDIA_DIR}/${filename}`, bytes);
+  await putObject(`media/${filename}`, bytes, sniffed.mime);
 
   await db.insert(schema.media).values({
     id,

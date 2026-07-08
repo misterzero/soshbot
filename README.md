@@ -33,7 +33,9 @@ The seed loads a fictional venue ("The Rusty Anchor Taproom") with intentional b
 | Promo asset generation (`lib/render`) — Satori JSX templates → PNG via resvg; daily/weekly/monthly at IG square, IG story, and FB sizes; brand-kit driven colors; platform captions | ✅ |
 | Review gallery (`/assets`) + brand kit editor (`/brand`) | ✅ |
 | Payout tracking (`/payouts`) — per-event payouts, monthly budget bar, spend-by-entertainer, injection-safe CSV export | ✅ |
-| Cloudflare deploy + Terraform (M4) | 🔜 |
+| Dual-runtime adapters — better-sqlite3/local-fs in dev, D1/R2 bindings on Workers | ✅ |
+| Terraform (`infra/`) — D1 + R2 per environment, R2-backed remote state | ✅ |
+| CD (`cd.yml`) — test → build → migrate → deploy staging → smoke → approval-gated prod | ✅ |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the milestone plan.
 
@@ -48,6 +50,16 @@ npm run db:reset    # rebuild + reseed local database
 npm run build       # production build
 npm run deploy      # build + deploy to Cloudflare Workers (M4)
 ```
+
+## Deploying (Cloudflare)
+
+One-time setup, then every `v*` tag deploys itself:
+
+1. **Provision** — follow [infra/README.md](infra/README.md): create the state bucket, run `terraform apply` for staging and prod, and paste the two `d1_database_id` outputs into `wrangler.toml`.
+2. **GitHub secrets** — add `CLOUDFLARE_API_TOKEN`, `CLOUDFLARE_ACCOUNT_ID`, `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY`; set `STAGING_URL`/`PRODUCTION_URL` repo variables; mark the `production` environment as protected (required reviewers).
+3. **Ship** — `git tag v0.1.0 && git push --tags`. CD runs tests, builds the OpenNext bundle, applies D1 migrations, deploys staging, smoke-tests `/api/health`, then waits for your approval before production.
+
+The Workers Paid plan ($5/mo) is required for the Satori rendering CPU time. Total stack cost ≈ $5–6/mo.
 
 ## Documentation
 

@@ -3,15 +3,13 @@
  * renders PNGs via the pipeline, writes them to disk, and records asset rows.
  */
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
-import { readFile, writeFile } from "node:fs/promises";
 import { and, eq, gt, lt, ne } from "drizzle-orm";
 import { getDb, schema } from "@/db";
+import { getObject, putObject } from "@/lib/storage";
 import { buildDailyCaption, buildWeeklyCaption } from "./caption";
 import { renderPng, PLATFORM_SIZES, type AssetType, type Platform } from "./pipeline";
 import { DailyPost, MonthlyCalendar, WeeklyLineup, DEFAULT_COLORS, type MonthCell } from "./templates";
 
-const ASSETS_DIR = ".data/assets";
 const DAY_MS = 86_400_000;
 
 async function photoDataUri(entertainerId: string | null): Promise<string | null> {
@@ -23,12 +21,9 @@ async function photoDataUri(entertainerId: string | null): Promise<string | null
     .where(eq(schema.media.entertainerId, entertainerId));
   const pick = items.find((m) => m.isDefault && m.kind === "promo") ?? items.find((m) => m.kind === "promo");
   if (!pick) return null;
-  try {
-    const buf = await readFile(`.data/media/${pick.path}`);
-    return `data:${pick.mime};base64,${buf.toString("base64")}`;
-  } catch {
-    return null;
-  }
+  const bytes = await getObject(`media/${pick.path}`);
+  if (!bytes) return null;
+  return `data:${pick.mime};base64,${Buffer.from(bytes).toString("base64")}`;
 }
 
 async function saveAsset(
@@ -40,8 +35,7 @@ async function saveAsset(
 ): Promise<string> {
   const db = getDb();
   const id = randomUUID();
-  mkdirSync(ASSETS_DIR, { recursive: true });
-  await writeFile(`${ASSETS_DIR}/${id}.png`, png);
+  await putObject(`assets/${id}.png`, new Uint8Array(png), "image/png");
   await db.insert(schema.assets).values({
     id,
     venueId,

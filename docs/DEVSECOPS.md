@@ -26,7 +26,7 @@ The pipeline is a first-class portfolio artifact: every control below is visible
 3. Promote to **prod** via GitHub Environments (protected, manual approval gate).
 4. `terraform plan` posted to PR for `infra/` changes; `terraform apply` behind the same approval gate.
 
-Supply-chain notes: actions pinned to commit SHAs, `permissions:` minimized per job, Cloudflare API token scoped to this account's Workers/D1/R2 only and stored as a GitHub Environment secret.
+Supply-chain notes: actions pinned by major version tag with Dependabot keeping them current (upgrade to full SHA pinning is a documented hardening step), `permissions:` minimized per job, Cloudflare API token scoped to this account's Workers/D1/R2 only and stored as a GitHub Environment secret.
 
 ## IaC — Terraform
 
