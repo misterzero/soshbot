@@ -16,7 +16,7 @@ npm run dev        # http://localhost:3000
 
 The seed loads a fictional venue ("The Rusty Anchor Taproom") with intentional booking problems, so the dashboard immediately demonstrates conflict, gap, variety, and budget alerts.
 
-## What's here (M0)
+## What's here (M0 + M1)
 
 | Area | Status |
 |---|---|
@@ -26,7 +26,10 @@ The seed loads a fictional venue ("The Rusty Anchor Taproom") with intentional b
 | Caption grammar (`lib/render`) — platform-ready captions from event facts + brand kit | ✅ |
 | Dashboard — alerts, upcoming events, entertainer roster | ✅ |
 | CI — lint, typecheck, tests, build, CodeQL SAST, Gitleaks secret scan, npm audit | ✅ |
-| iCal feed sync worker, review queue (M1) | 🔜 |
+| iCal feed sync (`lib/sync`) — hardened fetcher (SSRF guards, size cap, no redirects), pure diff planner, upsert on UID, cancel-on-removal | ✅ |
+| Review queue — assign unmatched events; assignment teaches the matcher new aliases | ✅ |
+| Entertainer CRUD + media uploads (magic-byte sniffed, random server-side names) | ✅ |
+| Calendar feed management + manual sync (`/sources`, `POST /api/sync`) | ✅ |
 | Payout tracking UI (M2), Satori image rendering (M3), Cloudflare deploy + Terraform (M4) | 🔜 |
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the milestone plan.

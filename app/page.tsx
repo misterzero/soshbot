@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { getDb, schema } from "@/db";
 import { evaluate, DEFAULT_RULES, type RuleEvent } from "@/lib/rules/engine";
 
@@ -52,9 +53,19 @@ export default async function Dashboard() {
     .sort((a, b) => a.startsAt.getTime() - b.startsAt.getTime());
 
   const committed = allPayouts.reduce((sum, p) => sum + p.amount, 0);
+  const reviewCount = allEvents.filter(
+    (e) => !e.entertainerId && e.status !== "cancelled" && e.startsAt.getTime() > Date.now()
+  ).length;
 
   return (
     <>
+      {reviewCount > 0 && (
+        <p className="muted" style={{ margin: 0 }}>
+          <Link href="/review">
+            {reviewCount} event{reviewCount === 1 ? "" : "s"} awaiting entertainer match →
+          </Link>
+        </p>
+      )}
       <section className="panel">
         <h2>Booking alerts</h2>
         {alerts.length === 0 ? (

@@ -65,6 +65,7 @@ export const media = sqliteTable("media", {
     .references(() => entertainers.id),
   kind: text("kind", { enum: ["logo", "promo"] }).notNull(),
   path: text("path").notNull(),
+  mime: text("mime").notNull().default("image/jpeg"),
   isDefault: integer("is_default", { mode: "boolean" }).notNull().default(false),
 });
 
@@ -74,6 +75,7 @@ export const events = sqliteTable("events", {
     .notNull()
     .references(() => venues.id),
   icalUid: text("ical_uid").unique(),
+  calendarSourceId: text("calendar_source_id").references(() => calendarSources.id),
   title: text("title").notNull(),
   startsAt: integer("starts_at", { mode: "timestamp_ms" }).notNull(),
   endsAt: integer("ends_at", { mode: "timestamp_ms" }).notNull(),
