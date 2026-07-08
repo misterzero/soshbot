@@ -44,6 +44,9 @@ jobs:
   codeql:
     name: SAST (CodeQL)
     runs-on: ubuntu-latest
+    # Dependabot-triggered runs get a read-only token and cannot upload
+    # SARIF results; the merge commit on main is still fully scanned.
+    if: github.actor != 'dependabot[bot]'
     permissions:
       security-events: write
       contents: read
@@ -62,6 +65,8 @@ jobs:
   secrets:
     name: Secret scan (Gitleaks)
     runs-on: ubuntu-latest
+    # Same read-only token restriction as CodeQL; main is still scanned.
+    if: github.actor != 'dependabot[bot]'
     steps:
       - name: Checkout
         uses: actions/checkout@v5
